@@ -4,7 +4,21 @@ from pydantic import BaseModel, Field
 from sentence_transformers import SentenceTransformer
 from models import EmbeddingModel, ModelSettings
 
-app = FastAPI()
+description = """
+Get embeddings from text via Sentence Transformers.
+
+Built with [Sentence Transformers.](https://www.sbert.net/docs/sentence_transformer/pretrained_models.html)
+"""
+
+app = FastAPI(
+    title="Sentence Transformers API",
+    summary="Text embeddings API.",
+    description=description,
+    license_info={
+        "name": "MIT",
+        "url": "https://raw.githubusercontent.com/tefabi/sentence-transformers-api/refs/heads/main/LICENSE",
+    },
+)
 
 
 @app.get("/health/")
