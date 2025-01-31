@@ -1,12 +1,14 @@
 from functools import lru_cache
 from typing import Annotated
+from pydantic import BaseModel, Field
+from dotenv import load_dotenv
 
 from fastapi import Depends, FastAPI
 from fastapi.exceptions import RequestValidationError, HTTPException
 from fastapi.responses import RedirectResponse
 
-from pydantic import BaseModel, Field
 from sentence_transformers import SentenceTransformer
+
 from models import EmbeddingModel, ModelSettings
 from .config import Settings
 
@@ -29,6 +31,7 @@ app = FastAPI(
 
 @lru_cache
 def get_settings():
+    load_dotenv(".env")
     return Settings()
 
 
