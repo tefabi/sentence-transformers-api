@@ -1,0 +1,9 @@
+services:
+  sentence-transformers:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    ports:
+      - "8800:80"
+    volumes:
+      - "./.env:/code/.env"
