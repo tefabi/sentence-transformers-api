@@ -1,9 +1,14 @@
-from fastapi import FastAPI
-from fastapi.exceptions import RequestValidationError
+from functools import lru_cache
+from typing import Annotated
+
+from fastapi import Depends, FastAPI
+from fastapi.exceptions import RequestValidationError, HTTPException
 from fastapi.responses import RedirectResponse
+
 from pydantic import BaseModel, Field
 from sentence_transformers import SentenceTransformer
 from models import EmbeddingModel, ModelSettings
+from .config import Settings
 
 description = """
 Get embeddings from text via Sentence Transformers.
@@ -22,6 +27,11 @@ app = FastAPI(
 )
 
 
+@lru_cache
+def get_settings():
+    return Settings()
+
+
 @app.get("/")
 async def root():
     return RedirectResponse("/docs/")
@@ -35,6 +45,7 @@ async def health():
 class EmbeddingBody(BaseModel):
     model: EmbeddingModel = Field(default=EmbeddingModel.all_mpnet_base_v2)
     text: str
+    token: str
 
 
 class EmbeddingResponse(BaseModel):
@@ -44,7 +55,12 @@ class EmbeddingResponse(BaseModel):
 
 
 @app.post("/embeddings/")
-async def embeddings(data: EmbeddingBody) -> EmbeddingResponse:
+async def embeddings(
+    data: EmbeddingBody, settings: Annotated[Settings, Depends(get_settings)]
+) -> EmbeddingResponse:
+    if data.token != settings.token:
+        raise HTTPException(403, "Forbidden")
+
     setting = ModelSettings.models[data.model]
     input_token_count = len(data.text) / 4
     if input_token_count > setting.max_sequence:
